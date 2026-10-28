@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Keep popup CSS isolated to the extension popup page. */
+@source "../popup/App.tsx";
+
 :root {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: #eef3f9;

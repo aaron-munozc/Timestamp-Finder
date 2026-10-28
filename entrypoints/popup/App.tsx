@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react';
-import type { Browser } from 'wxt/browser';
-
 
 type PageState = 'checking' | 'video' | 'youtube' | 'other';
 
@@ -28,7 +26,6 @@ export default function App() {
     setFeedback('');
     try {
       const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-
       if (tab) {
         if (!tab.id) throw new Error('No active tab');
         await browser.tabs.sendMessage(tab.id, { type: 'YTTS_OPEN_PANEL' });
