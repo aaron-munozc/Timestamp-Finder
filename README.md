@@ -1,6 +1,6 @@
 # YouTube Comment Timestamp Finder
 
-A WXT + React + Tailwind CSS v4 browser extension that adds a dark, compact timestamp panel to YouTube video pages. It searches comment text for timecodes such as `2:14`, `12:48`, and `1:02:14`, groups multiple timecodes from the same comment, and lets you jump to a moment with one click.
+A WXT + React + Tailwind CSS v4 browser extension that adds a dark, compact timestamp panel to YouTube video pages. It searches comment text for timecodes such as `2:14`, `12:48`, and `1:02:14`, groups multiple timecodes from the same comment, and lets you jump to a moment with one click. Duplicate timestamps can be shown individually, grouped by nearby time, or hidden from the current view with a configurable 0–60 second tolerance.
 
 ## Features
 
@@ -8,10 +8,11 @@ A WXT + React + Tailwind CSS v4 browser extension that adds a dark, compact time
 - Scans comments already loaded by YouTube, then scrolls through the comment section to prompt more comments to load.
 - Expands loaded replies and "Read more" comment text where it can recognize those controls.
 - Groups multiple timestamps under their original comment and sorts comments by their earliest timecode.
-- Supports long videos with timestamps like `100:00`, validates seconds/minutes in timestamp formats, and de-duplicates repeated timecodes within the same comment.
+- Supports long videos with timestamps like `100:00` and validates seconds/minutes in timestamp formats. Repeated timestamp mentions are preserved instead of discarded.
 - Expands long comment text on demand so the full context is available without making every card huge.
 - Shows a subtle animated progress indicator while a deep scan is running, plus visible keyboard-focus styling.
-- Search by comment text, creator, or timestamp.
+- Choose **Show all**, **Group nearby timestamps**, or **Hide nearby duplicates** in the Timestamp display panel settings. The default is **Show all** with a **0-second** tolerance; group/hide mode can use any whole-second tolerance from 0 to 60.
+- Display preferences are saved locally using browser extension storage and apply across supported YouTube videos.
 - Minimize the panel to a floating timestamp button when it gets in the way.
 - Includes a popup with quick actions to start a scan or reopen the page panel.
 - Processes comments locally in the page; the extension makes no network requests and has no remote service.
@@ -45,7 +46,7 @@ The in-page panel stylesheet lives in `entrypoints/styles/content.css` instead o
 
 ## Project structure
 
-- `entrypoints/content.ts` — YouTube route detection, comment scanning, timestamp parsing, and the Shadow DOM panel behavior.
+- `entrypoints/content.ts` — YouTube route detection, comment scanning, timestamp parsing, duplicate grouping/hiding, settings persistence, and Shadow DOM panel behavior.
 - `entrypoints/styles/content.css` — injected panel styling and Tailwind utilities, imported as processed CSS text and attached inside the Shadow DOM.
 - `entrypoints/styles/index.css` — popup styles and Tailwind utilities.
 - `entrypoints/popup/` — React popup UI.
