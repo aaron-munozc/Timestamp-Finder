@@ -474,10 +474,13 @@ export default defineContentScript({
 		): TimestampOccurrence[][] {
 			const groups: TimestampOccurrence[][] = [];
 			for (const occurrence of occurrences) {
-				const currentGroup = groups[groups.length - 1];
+        const currentGroup = groups[groups.length - 1];
+
+        const firstOccurrence = currentGroup?.[0];
+
 				if (
-					currentGroup &&
-					occurrence.timestamp.seconds - currentGroup[0]!.timestamp.seconds <=
+				  firstOccurrence &&
+					occurrence.timestamp.seconds - firstOccurrence.timestamp.seconds <=
 						displaySettings.toleranceSeconds
 				) {
 					currentGroup.push(occurrence);
@@ -594,12 +597,17 @@ export default defineContentScript({
 			groups: TimestampOccurrence[][],
 		): void {
 			for (const group of groups) {
-				if (!group || group.length === 0) continue;
+        if (!group || group.length === 0) continue;
+
+        const first = group[0];
+        const last = group[group.length - 1];
+
+        if (!first || !last) continue;
 
 				const card = makeElement("article", "moment-group-card");
 				const header = makeElement("div", "moment-group-header");
-				const firstSeconds = group[0]!.timestamp.seconds;
-				const lastSeconds = group[group.length - 1]!.timestamp.seconds;
+				const firstSeconds = first.timestamp.seconds;
+        const lastSeconds = last.timestamp.seconds;
 				const timeLabel =
 					firstSeconds === lastSeconds
 						? formatTime(firstSeconds)

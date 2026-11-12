@@ -32,15 +32,19 @@ export default function App() {
 
 	async function openPanel() {
 		setFeedback("");
+
+		const [tab] = await browser.tabs.query({
+			active: true,
+			currentWindow: true,
+		});
+
+		if (!tab?.id) {
+			setFeedback("Open or refresh a YouTube video tab, then try again.");
+			return;
+		}
+
 		try {
-			const [tab] = await browser.tabs.query({
-				active: true,
-				currentWindow: true,
-			});
-			if (tab) {
-				if (!tab.id) throw new Error("No active tab");
-				await browser.tabs.sendMessage(tab.id, { type: "YTTS_OPEN_PANEL" });
-			}
+			await browser.tabs.sendMessage(tab.id, { type: "YTTS_OPEN_PANEL" });
 			setFeedback("Timestamp panel opened on the video.");
 		} catch {
 			setFeedback("Open or refresh a YouTube video tab, then try again.");
@@ -49,15 +53,19 @@ export default function App() {
 
 	async function startScan() {
 		setFeedback("");
+
+		const [tab] = await browser.tabs.query({
+			active: true,
+			currentWindow: true,
+		});
+
+		if (!tab?.id) {
+			setFeedback("Open or refresh a YouTube video tab, then try again.");
+			return;
+		}
+
 		try {
-			const [tab] = await browser.tabs.query({
-				active: true,
-				currentWindow: true,
-			});
-			if (tab) {
-				if (!tab.id) throw new Error("No active tab");
-				await browser.tabs.sendMessage(tab.id, { type: "YTTS_START_SCAN" });
-			}
+			await browser.tabs.sendMessage(tab.id, { type: "YTTS_START_SCAN" });
 			setFeedback("Scan started. Results will appear in the page panel.");
 		} catch {
 			setFeedback("Open or refresh a YouTube video tab, then try again.");
@@ -68,7 +76,7 @@ export default function App() {
 		<main className="popup-shell">
 			<header className="popup-header">
 				<div className="popup-mark" aria-hidden="true">
-					◷
+					<img src="/logo_dark.svg" alt="" className="brand-logo" />
 				</div>
 				<div className="popup-brand-copy">
 					<div className="popup-eyebrow">YOUTUBE TOOL</div>
