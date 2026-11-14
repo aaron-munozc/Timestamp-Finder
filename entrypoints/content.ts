@@ -474,14 +474,13 @@ export default defineContentScript({
 		): TimestampOccurrence[][] {
 			const groups: TimestampOccurrence[][] = [];
 			for (const occurrence of occurrences) {
-        const currentGroup = groups[groups.length - 1];
-
-        const firstOccurrence = currentGroup?.[0];
+				const currentGroup = groups[groups.length - 1];
+				const firstOccurrence = currentGroup?.[0];
 
 				if (
-				  firstOccurrence &&
+					firstOccurrence &&
 					occurrence.timestamp.seconds - firstOccurrence.timestamp.seconds <=
-						displaySettings.toleranceSeconds
+					displaySettings.toleranceSeconds
 				) {
 					currentGroup.push(occurrence);
 				} else {
@@ -597,17 +596,16 @@ export default defineContentScript({
 			groups: TimestampOccurrence[][],
 		): void {
 			for (const group of groups) {
-        if (!group || group.length === 0) continue;
+				if (group.length === 0) continue;
 
-        const first = group[0];
-        const last = group[group.length - 1];
-
-        if (!first || !last) continue;
+				const first = group[0];
+				const last = group[group.length - 1];
+				if (!first || !last) continue;
 
 				const card = makeElement("article", "moment-group-card");
 				const header = makeElement("div", "moment-group-header");
 				const firstSeconds = first.timestamp.seconds;
-        const lastSeconds = last.timestamp.seconds;
+				const lastSeconds = last.timestamp.seconds;
 				const timeLabel =
 					firstSeconds === lastSeconds
 						? formatTime(firstSeconds)
@@ -756,7 +754,14 @@ export default defineContentScript({
         <section class="panel" data-role="panel" aria-label="YouTube comment timestamps">
           <header class="topbar">
             <div class="brand">
-              <div class="brand-mark" aria-hidden="true">◷</div>
+              <div class="brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 48 48" focusable="false">
+                  <path d="M17 21h14l11 20H6z" fill="#0089ef" stroke="#17191e" stroke-width="2.5" stroke-linejoin="round" />
+                  <circle cx="24" cy="15" r="10" fill="#ffdc00" stroke="#17191e" stroke-width="2.5" />
+                  <path d="M24 9v6h6" fill="none" stroke="#17191e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                  <rect x="6" y="35" width="36" height="8" rx="3" fill="#00b3d4" stroke="#17191e" stroke-width="2.5" />
+                </svg>
+              </div>
               <div style="min-width:0">
                 <div class="eyebrow">COMMENT TIMESTAMP FINDER</div>
                 <h2>Jump to the good parts</h2>
@@ -805,7 +810,6 @@ export default defineContentScript({
             <div class="empty-title" data-role="empty-title">No timestamps found yet</div>
             <div class="empty-copy" data-role="empty-copy">Scan the comments to find timecodes such as 2:14 or 1:02:14.</div>
           </div>
-          <footer class="foot">Built for your watch session · <strong>Nothing leaves this page</strong></footer>
         </section>
         <button class="bubble" type="button" data-action="expand" aria-label="Open timestamp panel" title="Open timestamp panel" hidden>
           <span class="bubble-symbol" aria-hidden="true">◷</span><span class="bubble-count" data-role="bubble-count">0</span>
@@ -938,7 +942,6 @@ export default defineContentScript({
 			collected = new Map<string, TimestampComment>();
 			clickedExpanders = new WeakSet<Element>();
 			isCollapsed = false;
-			isScanning = false;
 			scanStatus = "Ready to scan comments";
 			scanStatusKind = "neutral";
 			mountPanel();

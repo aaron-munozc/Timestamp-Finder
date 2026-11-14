@@ -1,72 +1,67 @@
 import { useEffect, useState } from "react";
 
 type PageState = "checking" | "video" | "youtube" | "other";
+type PopupAction = "YTTS_OPEN_PANEL" | "YTTS_START_SCAN";
 
 export default function App() {
 	const [pageState, setPageState] = useState<PageState>("checking");
 	const [feedback, setFeedback] = useState("");
 
 	useEffect(() => {
+		let isActive = true;
+
 		void browser.tabs
 			.query({ active: true, currentWindow: true })
 			.then(([tab]) => {
-				let url: URL | null = null;
-				try {
-					if (tab && tab.url) url = new URL(tab.url);
-				} catch {
-					url = null;
+				let nextState: PageState = "other";
+
+				if (tab?.url) {
+					try {
+						const url = new URL(tab.url);
+						if (/(^|\.)youtube\.com$/i.test(url.hostname)) {
+							nextState =
+								(url.pathname === "/watch" &&
+									Boolean(url.searchParams.get("v"))) ||
+								/^\/shorts\//.test(url.pathname)
+									? "video"
+									: "youtube";
+						}
+					} catch {
+						nextState = "other";
+					}
 				}
-				if (url && /(^|\.)youtube\.com$/i.test(url.hostname)) {
-					setPageState(
-						(url.pathname === "/watch" && Boolean(url.searchParams.get("v"))) ||
-							/^\/shorts\//.test(url.pathname)
-							? "video"
-							: "youtube",
-					);
-				} else {
-					setPageState("other");
-				}
+
+				if (isActive) setPageState(nextState);
 			})
-			.catch(() => setPageState("other"));
+			.catch(() => {
+				if (isActive) setPageState("other");
+			});
+
+		return () => {
+			isActive = false;
+		};
 	}, []);
 
-	async function openPanel() {
+	async function sendAction(action: PopupAction) {
 		setFeedback("");
 
-		const [tab] = await browser.tabs.query({
-			active: true,
-			currentWindow: true,
-		});
-
-		if (!tab?.id) {
-			setFeedback("Open or refresh a YouTube video tab, then try again.");
-			return;
-		}
-
 		try {
-			await browser.tabs.sendMessage(tab.id, { type: "YTTS_OPEN_PANEL" });
-			setFeedback("Timestamp panel opened on the video.");
-		} catch {
-			setFeedback("Open or refresh a YouTube video tab, then try again.");
-		}
-	}
+			const [tab] = await browser.tabs.query({
+				active: true,
+				currentWindow: true,
+			});
 
-	async function startScan() {
-		setFeedback("");
+			if (!tab?.id) {
+				setFeedback("Open or refresh a YouTube video tab, then try again.");
+				return;
+			}
 
-		const [tab] = await browser.tabs.query({
-			active: true,
-			currentWindow: true,
-		});
-
-		if (!tab?.id) {
-			setFeedback("Open or refresh a YouTube video tab, then try again.");
-			return;
-		}
-
-		try {
-			await browser.tabs.sendMessage(tab.id, { type: "YTTS_START_SCAN" });
-			setFeedback("Scan started. Results will appear in the page panel.");
+			await browser.tabs.sendMessage(tab.id, { type: action });
+			setFeedback(
+				action === "YTTS_OPEN_PANEL"
+					? "Timestamp panel opened on the video."
+					: "Scan started. Results will appear in the page panel.",
+			);
 		} catch {
 			setFeedback("Open or refresh a YouTube video tab, then try again.");
 		}
@@ -92,25 +87,7 @@ export default function App() {
 				/>
 			</header>
 
-			<section className="popup-intro">
-				<div className="popup-art" aria-hidden="true">
-					<span className="art-ring art-ring-one" />
-					<span className="art-ring art-ring-two" />
-					<span className="art-time">12:48</span>
-					<span className="art-play">▶</span>
-				</div>
-				<h2>
-					Skip the scroll.
-					<br />
-					<span>Find the moment.</span>
-				</h2>
-				<p>
-					Collect timestamps hidden in YouTube comments and jump directly to the
-					clips people mention.
-				</p>
-			</section>
-
-			<section className="popup-status">
+			<section className="popup-status" aria-live="polite">
 				<span className={`status-icon ${pageState === "video" ? "ready" : ""}`}>
 					{pageState === "video" ? "✓" : "·"}
 				</span>
@@ -140,7 +117,7 @@ export default function App() {
 				<button
 					className="primary-action"
 					type="button"
-					onClick={() => void startScan()}
+					onClick={() => void sendAction("YTTS_START_SCAN")}
 					disabled={pageState !== "video"}
 				>
 					<span aria-hidden="true">⌕</span> Scan all comments
@@ -148,7 +125,7 @@ export default function App() {
 				<button
 					className="secondary-action"
 					type="button"
-					onClick={() => void openPanel()}
+					onClick={() => void sendAction("YTTS_OPEN_PANEL")}
 					disabled={pageState !== "video"}
 				>
 					Show timestamp panel <span aria-hidden="true">↗</span>
@@ -159,13 +136,6 @@ export default function App() {
 					{feedback}
 				</div>
 			)}
-
-			<footer className="popup-footer">
-				<span>
-					<i /> Private by design
-				</span>
-				<span>Runs locally in your browser</span>
-			</footer>
 		</main>
 	);
 }

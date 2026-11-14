@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 // See https://wxt.dev/api/reference/wxt/interfaces/inlineconfig.html
 export default defineConfig({
   vite: () => ({
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
   }),
   modules: ['@wxt-dev/module-react'],
 });
