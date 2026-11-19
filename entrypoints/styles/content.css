@@ -144,6 +144,13 @@ h2 {
 	white-space: nowrap;
 }
 
+.panel-controls {
+	display: flex;
+	flex: 0 0 auto;
+	align-items: center;
+	gap: 6px;
+}
+
 .collapse {
 	display: grid;
 	place-items: center;
@@ -164,6 +171,34 @@ h2 {
 	border-color: rgba(239, 68, 68, 0.48);
 	background: #30343d;
 	color: var(--color-text);
+}
+
+.close-panel {
+	display: grid;
+	place-items: center;
+	flex: 0 0 31px;
+	width: 31px;
+	height: 31px;
+	padding: 0;
+	border: 1px solid rgba(239, 68, 68, 0.3);
+	border-radius: 9px;
+	background: rgba(239, 68, 68, 0.09);
+	color: #ff9a9a;
+	font-size: 20px;
+	line-height: 1;
+	cursor: pointer;
+	transition:
+		background 0.12s ease,
+		border-color 0.12s ease,
+		color 0.12s ease,
+		transform 0.12s ease;
+}
+
+.close-panel:hover {
+	border-color: rgba(239, 68, 68, 0.7);
+	background: rgba(239, 68, 68, 0.2);
+	color: #fff;
+	transform: translateY(-1px);
 }
 
 .intro {
@@ -659,6 +694,7 @@ h2 {
 .scan-button:focus-visible,
 .rescan-button:focus-visible,
 .collapse:focus-visible,
+.close-panel:focus-visible,
 .bubble:focus-visible {
 	outline: 2px solid var(--brand-yellow);
 	outline-offset: 2px;

@@ -43,6 +43,7 @@ export default defineContentScript({
 		let shadow: ShadowRoot | null = null;
 		let currentVideoKey = "";
 		let isCollapsed = false;
+		let isPanelDismissed = false;
 		let isScanning = false;
 		let activeScanId = 0;
 		let scanOriginalScrollY: number | null = null;
@@ -764,11 +765,13 @@ export default defineContentScript({
               </div>
               <div style="min-width:0">
                 <div class="eyebrow">COMMENT TIMESTAMP FINDER</div>
-                <h2>Jump to the good parts</h2>
                 <span class="video-title" data-role="video-title">Current video</span>
               </div>
             </div>
-            <button class="collapse" type="button" data-action="collapse" aria-label="Minimize timestamp panel" title="Minimize">−</button>
+            <div class="panel-controls" role="group" aria-label="Panel controls">
+              <button class="collapse" type="button" data-action="collapse" aria-label="Minimize panel" title="Minimize to floating button">−</button>
+              <button class="close-panel" type="button" data-action="close" aria-label="Close timestamp panel" title="Close panel">×</button>
+            </div>
           </header>
           <section class="intro">
             <div class="intro-label">YOUR COMMENT INDEX</div>
@@ -823,6 +826,9 @@ export default defineContentScript({
 			const collapseButton = shadow.querySelector<HTMLButtonElement>(
 				'[data-action="collapse"]',
 			);
+			const closeButton = shadow.querySelector<HTMLButtonElement>(
+				'[data-action="close"]',
+			);
 			const expandButton = shadow.querySelector<HTMLButtonElement>(
 				'[data-action="expand"]',
 			);
@@ -836,6 +842,7 @@ export default defineContentScript({
 				'[data-role="filter"]',
 			);
 			collapseButton?.addEventListener("click", () => setCollapsed(true));
+			closeButton?.addEventListener("click", () => setPanelDismissed(true));
 			expandButton?.addEventListener("click", () => setCollapsed(false));
 			scanButton?.addEventListener("click", () => {
 				if (isScanning) stopScan();
@@ -891,8 +898,14 @@ export default defineContentScript({
 			const bubble = shadow?.querySelector<HTMLButtonElement>(
 				'[data-action="expand"]',
 			);
-			if (panel) panel.hidden = collapsed;
-			if (bubble) bubble.hidden = !collapsed;
+			if (panel) panel.hidden = isPanelDismissed || collapsed;
+			if (bubble) bubble.hidden = isPanelDismissed || !collapsed;
+		}
+
+		function setPanelDismissed(dismissed: boolean): void {
+			isPanelDismissed = dismissed;
+			if (!dismissed) isCollapsed = false;
+			setCollapsed(isCollapsed);
 		}
 
 		function mountPanel(): void {
@@ -942,6 +955,7 @@ export default defineContentScript({
 			collected = new Map<string, TimestampComment>();
 			clickedExpanders = new WeakSet<Element>();
 			isCollapsed = false;
+			isPanelDismissed = false;
 			scanStatus = "Ready to scan comments";
 			scanStatusKind = "neutral";
 			mountPanel();
@@ -1165,13 +1179,19 @@ export default defineContentScript({
 			if (message?.type === "YTTS_OPEN_PANEL") {
 				syncPage();
 				if (getVideoKey()) {
-					window.setTimeout(() => setCollapsed(false), 300);
+					window.setTimeout(() => setPanelDismissed(false), 300);
+				}
+			}
+			if (message?.type === "YTTS_HIDE_PANEL") {
+				syncPage();
+				if (getVideoKey()) {
+					window.setTimeout(() => setPanelDismissed(true), 350);
 				}
 			}
 			if (message?.type === "YTTS_START_SCAN") {
 				syncPage();
 				window.setTimeout(() => {
-					setCollapsed(false);
+					setPanelDismissed(false);
 					void startDeepScan();
 				}, 350);
 			}

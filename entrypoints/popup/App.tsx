@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 type PageState = "checking" | "video" | "youtube" | "other";
-type PopupAction = "YTTS_OPEN_PANEL" | "YTTS_START_SCAN";
+type PopupAction = "YTTS_OPEN_PANEL" | "YTTS_START_SCAN" | "YTTS_HIDE_PANEL";
 
 export default function App() {
 	const [pageState, setPageState] = useState<PageState>("checking");
@@ -59,8 +59,10 @@ export default function App() {
 			await browser.tabs.sendMessage(tab.id, { type: action });
 			setFeedback(
 				action === "YTTS_OPEN_PANEL"
-					? "Timestamp panel opened on the video."
-					: "Scan started. Results will appear in the page panel.",
+					? "Timestamp panel is visible on the video."
+					: action === "YTTS_HIDE_PANEL"
+						? "Timestamp panel hidden. Use Show panel to bring it back."
+						: "Scan started. Results will appear in the page panel.",
 			);
 		} catch {
 			setFeedback("Open or refresh a YouTube video tab, then try again.");
@@ -71,7 +73,7 @@ export default function App() {
 		<main className="popup-shell">
 			<header className="popup-header">
 				<div className="popup-mark" aria-hidden="true">
-					<img src="/logo_dark.svg" alt="" className="brand-logo" />
+					<img src="/logo.svg" alt="" className="brand-logo" />
 				</div>
 				<div className="popup-brand-copy">
 					<div className="popup-eyebrow">YOUTUBE TOOL</div>
@@ -129,6 +131,15 @@ export default function App() {
 					disabled={pageState !== "video"}
 				>
 					Show timestamp panel <span aria-hidden="true">↗</span>
+				</button>
+				<button
+					className="secondary-action"
+					type="button"
+					onClick={() => void sendAction("YTTS_HIDE_PANEL")}
+					disabled={pageState !== "video"}
+					style={{ opacity: 0.78 }}
+				>
+					Hide timestamp panel <span aria-hidden="true">×</span>
 				</button>
 			</div>
 			{feedback && (
