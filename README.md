@@ -1,4 +1,7 @@
-# YouTube Comment Timestamp Finder
+<div align="center">
+  <img src="public/logo.svg" alt="YouTube Comment Timestamp Finder Logo" width="96" height="96" />
+  <h1>YouTube Comment Timestamp Finder</h1>
+</div>
 
 A WXT + React + Tailwind CSS v4 browser extension that adds a dark, compact timestamp panel to YouTube video pages. It searches comment text for timecodes such as `2:14`, `12:48`, and `1:02:14`, groups multiple timecodes from the same comment, and lets you jump to a moment with one click. Duplicate timestamps can be shown individually, grouped by nearby time, or hidden from the current view with a configurable 0–60 second tolerance.
 
