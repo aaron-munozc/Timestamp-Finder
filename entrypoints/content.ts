@@ -1171,13 +1171,12 @@ export default defineContentScript({
 				if (getVideoKey()) {
 					mountPanel();
 					setPanelDismissed(false);
-					window.setTimeout(() => setPanelDismissed(false), 300);
 				}
 			}
 			if (message?.type === "YTTS_HIDE_PANEL") {
 				syncPage();
-				if (getVideoKey()) {
-					window.setTimeout(() => setPanelDismissed(true), 350);
+        if (getVideoKey()) {
+     			setPanelDismissed(true);
 				}
 			}
 			if (message?.type === "YTTS_START_SCAN") {
@@ -1189,7 +1188,6 @@ export default defineContentScript({
 					mountPanel();
 					setPanelDismissed(false);
 					window.setTimeout(() => {
-						setPanelDismissed(false);
 						void startDeepScan();
 					}, 350);
 				}
