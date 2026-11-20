@@ -48,8 +48,7 @@ export default defineContentScript({
 		let activeScanId = 0;
 		let scanOriginalScrollY: number | null = null;
 		let scanStatus = "Ready to scan comments";
-		let scanStatusKind: "neutral" | "working" | "success" | "warning" =
-			"neutral";
+
 		let collected = new Map<string, TimestampComment>();
 		let displaySettings: DisplaySettings = { ...DEFAULT_DISPLAY_SETTINGS };
 		let clickedExpanders = new WeakSet<Element>();
@@ -247,7 +246,6 @@ export default defineContentScript({
 			kind: "neutral" | "working" | "success" | "warning" = "neutral",
 		): void {
 			scanStatus = message;
-			scanStatusKind = kind;
 			const status = shadow?.querySelector<HTMLElement>(
 				'[data-role="status-text"]',
 			);
@@ -957,8 +955,6 @@ export default defineContentScript({
 			isCollapsed = false;
 			isPanelDismissed = false;
 			scanStatus = "Ready to scan comments";
-			scanStatusKind = "neutral";
-			mountPanel();
 			if (shadow) {
 				const title = shadow.querySelector<HTMLElement>(
 					'[data-role="video-title"]',
@@ -969,10 +965,9 @@ export default defineContentScript({
 				);
 				if (filter) filter.value = "";
 			}
-			setCollapsed(false);
 			setStatus("Ready to scan comments", "neutral");
-			observeComments();
-			collectComments();
+			//observeComments();
+			//collectComments();
 			renderResults();
 			if (location.pathname.startsWith("/shorts/")) {
 				setStatus("Open the Shorts comments panel, then scan", "warning");
@@ -986,16 +981,12 @@ export default defineContentScript({
 				unmountPanel();
 				return;
 			}
-			if (videoKey !== currentVideoKey || !host?.isConnected) {
+			if (videoKey !== currentVideoKey) {
 				window.setTimeout(() => {
-					if (
-						getVideoKey() !== videoKey ||
-						(currentVideoKey === videoKey && host?.isConnected)
-					)
-						return;
+					if (getVideoKey() !== videoKey || currentVideoKey === videoKey) return;
 					setPageVideo(videoKey);
 				}, 250);
-			} else {
+			} else if (host?.isConnected) {
 				const title = shadow?.querySelector<HTMLElement>(
 					'[data-role="video-title"]',
 				);
@@ -1174,11 +1165,12 @@ export default defineContentScript({
 			updateScanButton();
 			renderResults();
 		}
-
 		browser.runtime.onMessage.addListener((message: RuntimeMessage) => {
 			if (message?.type === "YTTS_OPEN_PANEL") {
 				syncPage();
 				if (getVideoKey()) {
+					mountPanel();
+					setPanelDismissed(false);
 					window.setTimeout(() => setPanelDismissed(false), 300);
 				}
 			}
@@ -1189,11 +1181,18 @@ export default defineContentScript({
 				}
 			}
 			if (message?.type === "YTTS_START_SCAN") {
-				syncPage();
-				window.setTimeout(() => {
+				const videoKey = getVideoKey();
+				if (videoKey) {
+					if (videoKey !== currentVideoKey) {
+						setPageVideo(videoKey);
+					}
+					mountPanel();
 					setPanelDismissed(false);
-					void startDeepScan();
-				}, 350);
+					window.setTimeout(() => {
+						setPanelDismissed(false);
+						void startDeepScan();
+					}, 350);
+				}
 			}
 			return undefined;
 		});
